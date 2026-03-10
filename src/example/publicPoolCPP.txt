@@ -1,0 +1,289 @@
+#include <SDL.h>
+#include <iostream>
+#include <cstdlib>	//rand()用
+#include <ctime>	//time()用
+#include <type_traits>
+
+//=========================
+//全オブジェクトの共通基盤
+//=========================
+struct GameObject {
+    bool active = false;
+};
+
+//===========
+//汎用プール
+//===========
+template<typename T,int MAX>
+class Pool {
+    //static_assert(std::is_bsse_of<GameObject, T>::value,
+    //    "TはGameObjectを継承している必要があります。");
+
+public:
+    T   pool[MAX];
+    int freeList[MAX];
+    int freeCount;
+    int activeList[MAX];
+    int activeCount_;
+
+    Pool() {
+        freeCount = MAX;
+        activeCount_ = 0;
+        for (int i = 0; i < MAX; i++) {
+            pool[i].active = false;
+            freeList[i] = i;
+        }
+    }
+
+    //空きスロットを取得して返す
+    T* alloc() {
+        if (freeCount == 0) {
+            std::cout << "[警告] スロットが満杯です！" << std::endl;
+            return nullptr;
+        }
+        int index = freeList[--freeCount];
+        pool[index].active = true;
+        activeList[activeCount_++] = index;
+        return &pool[index];
+    }
+
+    //スロットを返却
+    void free(T* e) {
+        if (!e || !e->active) return;
+        e->active = false;
+
+        int index = e - pool;
+        freeList[freeCount++] = index;
+
+        for (int i = 0; i < activeCount_; i++) {
+            if (activeList[i] == index) {
+                activeList[i] = activeList[--activeCount_];
+                break;
+            }
+        }
+    }
+
+    int activeCount() { return activeCount_; }
+};
+
+//=========================
+//Enemy（GameObjectを継承）
+//=========================
+struct Enemy : public GameObject {
+    float x, y;
+    float vx, vy;
+    int   hp;
+};
+
+//==========================
+//Bullet（GameObjectを継承）
+//==========================
+struct Bullet : public GameObject {
+    float x, y;
+    float vx, vy;
+};
+
+
+
+//class EnemyPool {
+//public:
+//    static const int MAX = 10;
+//    Enemy pool[MAX];
+//
+//    int freeList[MAX]; //空きスロットの番号を管理
+//    int freeCount;     //現在の空き数
+//
+//    int activeList[MAX];  //アクティブなインデックスを管理
+//    int activeCount_;     //アクティブ数
+//
+//    //コンストラクタで全てfalseに初期化
+//    EnemyPool() {
+//        freeCount = MAX;
+//        activeCount_ = 0;
+//
+//        for (int i = 0; i < MAX; i++) {
+//            pool[i].active = false;
+//            freeList[i] = i;    //最初は全部空
+//        }
+//    }
+//
+//    //敵のスポーン
+//    Enemy* spawn(float x, float y, float vx, float vy, int hp) {
+//        std::cout << "spawn呼び出し freeCount=" << freeCount << std::endl;
+//
+//        if (freeCount == 0) {
+//            std::cout << "[警告] スロットが満杯です！" << std::endl;
+//            return nullptr;
+//        }
+//
+//        //末尾から番号を取り出す(探索しない)
+//        int index = freeList[--freeCount];
+//        pool[index] = { x, y, vx, vy, hp, true };
+//
+//        //active版
+//        activeList[activeCount_++] = index;
+//
+//        return &pool[index];
+//    }
+//
+//    //敵のデスポーン
+//    void despawn(Enemy* e) {
+//        if (!e || !e->active) return;
+//        e->active = false;
+//
+//        //番号をfreeListに返却
+//        int index = e - pool;   //ポインタ差分でインデックスを計算
+//        freeList[freeCount++] = index;
+//
+//        //activeListから除去
+//        for (int i = 0; i < activeCount_; i++) {
+//            if (activeList[i] == index) {
+//                //末尾と入れ替えて削除（順番を保つ必要はない）
+//                activeList[i] = activeList[--activeCount_];
+//                break;
+//            }
+//        }
+//    }
+//
+//    //全アクティブ敵を更新
+//    void update() {
+//        //activeListだけを見る
+//        for (int i = 0; i < activeCount_; i++) {
+//            Enemy& e = pool[activeList[i]];
+//            e.x += e.vx;
+//            e.y += e.vy;
+//
+//            //画面外にでたらdespawn
+//            if (e.x < -20 || e.x > 820 ||
+//                e.y < -20 || e.y > 620) {
+//                despawn(&e);//despawn経由でfreeListに返却
+//                //despawnで末尾と入れ替えるので、iを進めずにもう一度同じiを確認する
+//            }else{
+//                i++;    //despawnでactiveListが縮むので調整
+//            }
+//        }
+//    }
+//
+//    //全アクティブ敵を描画
+//    void render(SDL_Renderer* r) {
+//        SDL_SetRenderDrawColor(r, 255, 80, 80, 255);    //赤色を指定
+//        // activeListだけを見る
+//        for (int i = 0; i < activeCount_; i++) {
+//            Enemy& e = pool[activeList[i]];
+//            SDL_Rect rect = { (int)e.x, (int)e.y, 20, 20 };
+//            SDL_RenderFillRect(r, &rect);
+//        }
+//    }
+//
+//    //デバッグ：使用中スロット数
+//    int activeCount() {
+//        return activeCount_;
+//    }
+//};
+
+//=====================
+//MAINメインmainめいん
+//=====================
+int main(int argc, char* argv[]) {
+    srand((unsigned)time(nullptr));
+
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Window* window = SDL_CreateWindow(
+        "Generic Pool Demo",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        800, 600, SDL_WINDOW_SHOWN
+    );
+    SDL_Renderer* renderer = SDL_CreateRenderer(
+        window, -1, SDL_RENDERER_ACCELERATED
+    );
+
+    Pool<Enemy, 10> enemyPool;
+    Pool<Bullet, 50> bulletPool;
+
+    int  spawnTimer = 0;
+    bool running = true;
+    SDL_Event event;
+
+    while (running) {
+        while (SDL_PollEvent(&event))
+            if (event.type == SDL_QUIT) running = false;
+
+        spawnTimer++;
+        if (spawnTimer >= 30) {
+            spawnTimer = 0;
+
+            //敵をスポーン
+            Enemy* e = enemyPool.alloc();
+            if (e) {
+                e->x = 400; e->y = 300;
+                e->vx = ((rand() % 5) + 1) * (rand() % 2 == 0 ? 1 : -1);
+                e->vy = ((rand() % 5) + 1) * (rand() % 2 == 0 ? 1 : -1);
+                e->hp = 100;
+            }
+
+            //弾をスポーン
+            Bullet* b = bulletPool.alloc();
+            if (b) {
+                b->x = 400; b->y = 300;
+                b->vx = ((rand() % 8) + 2) * (rand() % 2 == 0 ? 1 : -1);
+                b->vy = ((rand() % 8) + 2) * (rand() % 2 == 0 ? 1 : -1);
+            }
+        }
+
+        // 敵の更新
+        int i = 0;
+        while (i < enemyPool.activeCount_) {
+            Enemy& e = enemyPool.pool[enemyPool.activeList[i]];
+            e.x += e.vx;
+            e.y += e.vy;
+            if (e.x < -20 || e.x > 820 || e.y < -20 || e.y > 620)
+                enemyPool.free(&e);
+            else
+                i++;
+        }
+
+        //弾の更新
+        int j = 0;
+        while (j < bulletPool.activeCount_) {
+            Bullet& b = bulletPool.pool[bulletPool.activeList[j]];
+            b.x += b.vx;
+            b.y += b.vy;
+            if (b.x < -20 || b.x > 820 || b.y < -20 || b.y > 620)
+                bulletPool.free(&b);
+            else
+                j++;
+        }
+
+        //描画
+        SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
+        SDL_RenderClear(renderer);
+
+        //敵を赤で描画
+        SDL_SetRenderDrawColor(renderer, 255, 80, 80, 255);
+        for (int k = 0; k < enemyPool.activeCount_; k++) {
+            Enemy& e = enemyPool.pool[enemyPool.activeList[k]];
+            SDL_Rect rect = { (int)e.x, (int)e.y, 20, 20 };
+            SDL_RenderFillRect(renderer, &rect);
+        }
+
+        //弾を黄色で描画
+        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+        for (int k = 0; k < bulletPool.activeCount_; k++) {
+            Bullet& b = bulletPool.pool[bulletPool.activeList[k]];
+            SDL_Rect rect = { (int)b.x, (int)b.y, 6, 6 };
+            SDL_RenderFillRect(renderer, &rect);
+        }
+
+        SDL_RenderPresent(renderer);
+
+        std::cout << "Enemy: " << enemyPool.activeCount()
+            << "  Bullet: " << bulletPool.activeCount() << std::endl;
+
+        SDL_Delay(16);
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 0;
+}

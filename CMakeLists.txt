@@ -6,9 +6,15 @@ set(CMAKE_CXX_STANDARD 17)
 # SDL2のパスを指定
 set(SDL2_DIR "${CMAKE_SOURCE_DIR}/libs/SDL2")
 
-add_executable(MyGame src/main.cpp "src/example/pool.cpp")
+# 追加：srcフォルダ以下の全cppを自動収集
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-target_include_directories(MyGame PRIVATE ${SDL2_DIR}/include)
+add_executable(MyGame ${SOURCES})
+
+target_include_directories(MyGame PRIVATE
+    ${SDL2_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src  # srcフォルダをインクルードパスに追加
+)
 
 target_link_libraries(MyGame PRIVATE
     ${SDL2_DIR}/lib/x64/SDL2.lib
