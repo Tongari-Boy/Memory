@@ -9,7 +9,7 @@ set(SDL2_DIR "${CMAKE_SOURCE_DIR}/libs/SDL2")
 # 追加：srcフォルダ以下の全cppを自動収集
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-add_executable(MyGame ${SOURCES})
+add_executable(MyGame ${SOURCES} "src/Attack.h" "src/Attack.cpp" "src/Effect.h" "src/Effect.cpp")
 
 target_include_directories(MyGame PRIVATE
     ${SDL2_DIR}/include
