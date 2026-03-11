@@ -169,7 +169,48 @@ void Game::render(SDL_Renderer* renderer) {
 		{ 255,255,255,255 }
 	);
 
+	//メモリバジェット用
+	renderMemoryDebug(renderer);
+
 	SDL_RenderPresent(renderer);
+}
+
+//メモリバジェット用
+void Game::renderMemoryDebug(SDL_Renderer* r) {
+	int x = 550; //画面右側に表示
+	int y = 10;
+	int lineH = 40;
+
+	SDL_Color cyan = { 0, 255, 255, 255 };
+	ui.drawText(r, "-- MEMORY BUDGET --", x, y, cyan);
+	y += 20;
+
+	//各プールの使用量を表示
+	ui.drawMemoryBar(r, "Enemy ",
+		enemyPool.usedBytes(), enemyPool.totalBytes(), x, y);
+	y += lineH;
+
+	ui.drawMemoryBar(r, "Attack",
+		attackPool.usedBytes(), attackPool.totalBytes(), x, y);
+	y += lineH;
+
+	ui.drawMemoryBar(r, "Effect",
+		effectPool.usedBytes(), effectPool.totalBytes(), x, y);
+	y += lineH;
+
+	//合計
+	size_t totalUsed = enemyPool.usedBytes() +
+		attackPool.usedBytes() +
+		effectPool.usedBytes();
+	size_t totalAll = enemyPool.totalBytes() +
+		attackPool.totalBytes() +
+		effectPool.totalBytes();
+
+	SDL_Color yellow = { 255, 255, 0, 255 };
+	ui.drawText(r,
+		"TOTAL: " + std::to_string(totalUsed) +
+		" / " + std::to_string(totalAll) + " bytes",
+		x, y, yellow);
 }
 
 //AABB衝突判定

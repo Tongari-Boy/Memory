@@ -49,3 +49,34 @@ void UI::shutdown() {
 	if (font) TTF_CloseFont(font);
 	TTF_Quit();
 }
+
+//メモリバジェット用
+void UI::drawMemoryBar(SDL_Renderer* r,
+	const std::string& label,
+	size_t used, size_t total,
+	int x, int y) {
+	//ラベルとバイト数を表示
+	std::string text = label + ":" +
+		std::to_string(used) + "/" +
+		std::to_string(total) + "bytes";
+	SDL_Color white = { 255,255,255,255 };
+	drawText(r, text, x, y, white);
+
+	//バーの背景
+	int barW = 200;
+	int barH = 10;
+	SDL_Rect bg = { x,y + 18,barW,barH };
+	SDL_SetRenderDrawColor(r, 60, 60, 60, 255);
+	SDL_RenderFillRect(r, &bg);
+
+	//使用率バー
+	float ratio = total > 0 ? (float)used / (float)total : 0;
+	int fillW = (int)(barW * ratio);
+
+	//使用率に応じて色を変える
+	Uint8 red = (Uint8)(255 * ratio);
+	Uint8 green = (Uint8)(255 * (1.0f - ratio));
+	SDL_Rect fill = { x, y + 18,fillW,barH };
+	SDL_SetRenderDrawColor(r, red, green, 0, 255);
+	SDL_RenderFillRect(r, &fill);
+}

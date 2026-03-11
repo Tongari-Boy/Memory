@@ -54,6 +54,8 @@ public:
 	void update(const Uint8* keys);
 	//描画
 	void render(SDL_Renderer* r);
+	//メモリバジェット用
+	void renderMemoryDebug(SDL_Renderer* r);
 
 private:
 	void updateAttacks();

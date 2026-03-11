@@ -54,4 +54,7 @@ public:
 
 	int activeCount() { return activeCount_; }
 
+	//メモリバジェット用
+	size_t usedBytes() const { return activeCount_ * sizeof(T); }
+	size_t totalBytes() const { return MAX * sizeof(T); }
 };

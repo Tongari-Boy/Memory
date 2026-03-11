@@ -12,5 +12,12 @@ public:
 				  int x, int y, SDL_Color color);
 	void drawHP(SDL_Renderer* r, int hp, int maxHp);
 	void drawScore(SDL_Renderer* r, int score);
+
+	//メモリバジェット用
+	void drawMemoryBar(SDL_Renderer* r,
+		const std::string& label,
+		size_t used, size_t total,
+		int x, int y);
+
 	void shutdown();
 };
