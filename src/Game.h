@@ -7,6 +7,13 @@
 #include "Pool.h"
 #include "UI.h"
 
+
+//ステージデータ
+struct StageData {
+	int enemyCount;
+	float enemySpeed;
+};
+
 class Game {
 public:
 
@@ -17,6 +24,7 @@ public:
 	//定数
 	static const int SCREEN_W = 800;
 	static const int SCREEN_H = 600;
+	static const int MAX_STAGE = 3;	//ステージ数
 
 	//ゲームオブジェクト
 	Player player;
@@ -33,6 +41,7 @@ public:
 	int score;
 	int direction;	//最後に向いた方向
 	bool spaceWas;	//前フレームのスペース状態
+	int currentStage;
 
 
 	//==========
@@ -51,7 +60,11 @@ private:
 	void updateEnemies();
 	void updateEffects();
 	void checkCollisions();
+	void loadStage(int stageIndex);
 
 	static bool checkHit(float ax, float ay, int aw, int ah,
 		float bx, float by, int bw, int bh);
+
+	//ステージデータ一覧
+	static const StageData STAGES[MAX_STAGE];
 };

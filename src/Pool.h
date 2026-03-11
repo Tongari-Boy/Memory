@@ -53,4 +53,5 @@ public:
 	}
 
 	int activeCount() { return activeCount_; }
+
 };

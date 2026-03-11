@@ -1,6 +1,14 @@
 #include "Game.h"
 #include <cstdlib>
 
+//ステージデータの定義
+const StageData Game::STAGES[Game::MAX_STAGE] = {
+	{4,1.5f},
+	{4,2.0f},
+	{5,2.5f},
+};
+
+
 void Game::init() {
 
 	ui.init("arial.ttf", 24);
@@ -8,9 +16,11 @@ void Game::init() {
 	score = 0;
 	direction = 1;
 	spaceWas = false;
+	currentStage = 0;
 
 	//Playerの生成
 	player.init(SCREEN_W / 2.0f, SCREEN_H / 2.0f);
+	loadStage(currentStage);
 	
 	//画面4隅に敵をランダムでスポーン
 	float spawnPoints[4][2] = {
@@ -43,6 +53,14 @@ void Game::update(const Uint8* keys) {
 	updateEnemies();
 	checkCollisions();
 	updateEffects();
+
+	//全敵を倒したら次のステージへ
+	if (enemyPool.activeCount_ == 0) {
+		currentStage++;
+		if (currentStage >= MAX_STAGE)
+			currentStage = 0;	//全ステージクリアでループ
+		loadStage(currentStage);
+	}
 }
 
 //攻撃更新
@@ -144,7 +162,12 @@ void Game::render(SDL_Renderer* renderer) {
 	//UI描画
 	ui.drawHP(renderer, player.hp, 3);
 	ui.drawScore(renderer, score);
-
+	//ステージ番号を描画
+	ui.drawText(renderer,
+		"STAGE:" + std::to_string(currentStage + 1),
+		10, 70,
+		{ 255,255,255,255 }
+	);
 
 	SDL_RenderPresent(renderer);
 }
@@ -154,4 +177,29 @@ bool Game::checkHit(float ax, float ay, int aw, int ah,
 	float bx, float by, int bw, int bh) {
 	return ax < bx + bw && ax + aw > bx &&
 		ay < by + bh && ay + ah > by;
+}
+
+//ステージのロード
+void Game::loadStage(int stageIndex) {
+	//既存の敵をクリア
+	while (enemyPool.activeCount_ > 0) {
+		enemyPool.free(&enemyPool.pool[enemyPool.activeList[0]]);
+	}
+
+	const StageData& stage = STAGES[stageIndex];
+	
+	//スポーン位置(最大5箇所)
+	float spawnPoints[5][2] = {
+		{50,50},{750,50},
+		{50,550},{750,550},
+		{400,50}
+	};
+
+	for (int i = 0; i < stage.enemyCount; i++) {
+		Enemy* e = enemyPool.alloc();
+		if (e) {
+			e->init(spawnPoints[i][0], spawnPoints[i][1]);
+			e->speed = stage.enemySpeed;	//速度を上書き
+		}
+	}
 }
