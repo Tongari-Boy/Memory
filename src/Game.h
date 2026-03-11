@@ -5,6 +5,7 @@
 #include "Attack.h"
 #include "Effect.h"
 #include "Pool.h"
+#include "UI.h"
 
 class Game {
 public:
@@ -24,6 +25,9 @@ public:
 	Pool<Enemy, 5> enemyPool;
 	Pool<Attack, 4> attackPool;
 	Pool<Effect, 32> effectPool;
+
+	//UI
+	UI ui;
 
 	//ƒQ[ƒ€ó‘Ô
 	int score;

@@ -2,6 +2,9 @@
 #include <cstdlib>
 
 void Game::init() {
+
+	ui.init("arial.ttf", 24);
+
 	score = 0;
 	direction = 1;
 	spaceWas = false;
@@ -98,10 +101,12 @@ void Game::checkCollisions() {
 					if (ef) ef->init(cx, cy, dirs[d][0], dirs[d][1]);
 				}
 
-				if (e.hp <= 0)
+				if (e.hp <= 0) {
+					score += 100;
 					enemyPool.free(&e);
-				else
+				}else {
 					j++;
+				}
 			}
 			else {
 				j++;
@@ -135,6 +140,11 @@ void Game::render(SDL_Renderer* renderer) {
 		Effect& ef = effectPool.pool[effectPool.activeList[k]];
 		ef.render(renderer);
 	}
+
+	//UI•`‰æ
+	ui.drawHP(renderer, player.hp, 3);
+	ui.drawScore(renderer, score);
+
 
 	SDL_RenderPresent(renderer);
 }
