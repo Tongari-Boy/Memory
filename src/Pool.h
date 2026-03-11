@@ -32,10 +32,18 @@ public:
 	}
 
 	void free(T* e) {
-		if (!e || !e->active) return;
+		if (!e) return;
+
+		if (!e->active) {
+			std::cout << "[Œx]“ñdfree‚ðŒŸo" << std::endl;
+			return;
+		}
+
 		e->active = false;
+
 		int index = e - pool;
 		freeList[freeCount++] = index;
+
 		for (int i = 0; i < activeCount_; i++) {
 			if (activeList[i] == index) {
 				activeList[i] = activeList[--activeCount_];
