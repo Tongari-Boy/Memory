@@ -3,10 +3,16 @@
 #include <ctime>
 #include "Game.h"
 
+//メモリの断片、連続の比較用
+extern int benchmarkMain();
+
+
 //=============
 //メイン
 //=============
 int main(int argc, char* argv[]) {
+	benchmarkMain();
+
 	srand((unsigned)time(nullptr));
 
 	SDL_Init(SDL_INIT_VIDEO);
