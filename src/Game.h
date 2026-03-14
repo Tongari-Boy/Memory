@@ -6,6 +6,8 @@
 #include "Effect.h"
 #include "Pool.h"
 #include "UI.h"
+#include "Map.h"
+#include "StackAllocator.h"
 
 
 //ステージデータ
@@ -43,6 +45,9 @@ public:
 	bool spaceWas;	//前フレームのスペース状態
 	int currentStage;
 
+	Map            map;
+	StackAllocator stackAlloc;
+	size_t         stageMarker;   //ステージ開始時のマーカー
 
 	//==========
 	//メソッド
@@ -56,6 +61,8 @@ public:
 	void render(SDL_Renderer* r);
 	//メモリバジェット用
 	void renderMemoryDebug(SDL_Renderer* r);
+	//シャットダウン
+	void shutdown();
 
 private:
 	void updateAttacks();

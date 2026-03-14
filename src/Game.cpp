@@ -8,8 +8,10 @@ const StageData Game::STAGES[Game::MAX_STAGE] = {
 	{5,2.5f},
 };
 
-
 void Game::init() {
+
+	//スタックアロケータを初期化(4KB確保)
+	stackAlloc.init(4096);
 
 	ui.init("arial.ttf", 24);
 
@@ -20,16 +22,9 @@ void Game::init() {
 
 	//Playerの生成
 	player.init(SCREEN_W / 2.0f, SCREEN_H / 2.0f);
+
+	//ステージのロード、敵のスポーン
 	loadStage(currentStage);
-	
-	//画面4隅に敵をランダムでスポーン
-	float spawnPoints[4][2] = {
-	{50, 50}, {750, 50}, {50, 550}, {750, 550}
-	};
-	for (int i = 0; i < 4; i++) {
-		Enemy* e = enemyPool.alloc();
-		if (e) e->init(spawnPoints[i][0], spawnPoints[i][1]);
-	}
 }
 
 void Game::update(const Uint8* keys) {
@@ -39,7 +34,7 @@ void Game::update(const Uint8* keys) {
 	if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT])  direction = 2;
 	if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) direction = 3;
 
-	player.update(keys);
+	player.update(keys,&map);
 
 	//攻撃生成
 	bool spaceNow = keys[SDL_SCANCODE_SPACE];
@@ -82,7 +77,7 @@ void Game::updateAttacks() {
 void Game::updateEnemies() {
 	for (int i = 0; i < enemyPool.activeCount_; i++) {
 		Enemy& e = enemyPool.pool[enemyPool.activeList[i]];
-		e.update(player.x, player.y);
+		e.update(player.x, player.y,&map);
 	}
 }
 
@@ -137,6 +132,9 @@ void Game::checkCollisions() {
 void Game::render(SDL_Renderer* renderer) {
 	SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 	SDL_RenderClear(renderer);
+
+	//マップの描画
+	map.render(renderer);
 
 	//プレイヤの描画
 	player.render(renderer);
@@ -222,6 +220,15 @@ bool Game::checkHit(float ax, float ay, int aw, int ah,
 
 //ステージのロード
 void Game::loadStage(int stageIndex) {
+	//前のステージのマップメモリを解放
+	stackAlloc.freeToMarker(stageMarker);
+
+	//現在位置をマーカーとして保存
+	stageMarker = stackAlloc.getMarker();
+
+	//マップをスタックアロケータから確保
+	map.load(stackAlloc, stageIndex);
+
 	//既存の敵をクリア
 	while (enemyPool.activeCount_ > 0) {
 		enemyPool.free(&enemyPool.pool[enemyPool.activeList[0]]);
@@ -243,4 +250,10 @@ void Game::loadStage(int stageIndex) {
 			e->speed = stage.enemySpeed;	//速度を上書き
 		}
 	}
+}
+
+//シャットダウン
+void Game::shutdown() {
+	stackAlloc.shutdown();
+	ui.shutdown();
 }

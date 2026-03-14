@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 		SDL_Delay(16);
 	}
 
-	game.ui.shutdown();
+	game.shutdown();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
