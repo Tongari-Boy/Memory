@@ -4,12 +4,23 @@
 
 struct Map;
 
+//“Gƒ^ƒCƒv
+enum EnemyType
+{
+	ENEMY_NORMAL = 0,
+	ENEMY_RUSH = 1,
+	ENEMY_LARGE = 2
+};
+
 struct Enemy : public GameObject {
 	float x, y;
 	float speed;
 	int	  hp;
+	int	  size;
+	EnemyType type;
+	bool isRushing;
 
-	void init(float startX, float startY);
+	void init(float startX, float startY,EnemyType t = ENEMY_NORMAL);
 	void update(float playerX, float playerY,const Map* map);
 	void render(SDL_Renderer* r);
 };

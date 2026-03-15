@@ -236,19 +236,40 @@ void Game::loadStage(int stageIndex) {
 
 	const StageData& stage = STAGES[stageIndex];
 	
-	//スポーン位置(最大5箇所)
-	float spawnPoints[5][2] = {
-		{50,50},{750,50},
-		{50,550},{750,550},
-		{400,50}
+	//床タイルの取得
+	int floorCols[130], floorRows[130], floorCount = 0;
+	map.getFloorTiles(floorCols, floorRows, floorCount, 130);
+
+	//敵タイプをステージに応じて変える
+	EnemyType types[5] = {
+		ENEMY_NORMAL, ENEMY_NORMAL,
+		ENEMY_RUSH,
+		ENEMY_LARGE,
+		ENEMY_RUSH
 	};
 
 	for (int i = 0; i < stage.enemyCount; i++) {
 		Enemy* e = enemyPool.alloc();
-		if (e) {
-			e->init(spawnPoints[i][0], spawnPoints[i][1]);
-			e->speed = stage.enemySpeed;	//速度を上書き
-		}
+		if (!e) break;
+
+		//プレイヤーから離れた床タイルを探す
+		int attempts = 0;
+		int col, row;
+		do {
+			int idx = rand() % floorCount;
+			col = floorCols[idx];
+			row = floorRows[idx];
+			attempts++;
+		} while (attempts < 20 &&
+			std::abs(col * Map::TILE_SIZE - player.x) < 200 &&
+			std::abs(row * Map::TILE_SIZE - player.y) < 200);
+
+		e->init(
+			col * Map::TILE_SIZE + Map::TILE_SIZE / 2.0f,
+			row * Map::TILE_SIZE + Map::TILE_SIZE / 2.0f,
+			types[i % 5]
+		);
+		e->speed *= stage.enemySpeed / 1.5f;
 	}
 }
 

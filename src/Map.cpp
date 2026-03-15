@@ -79,3 +79,17 @@ bool Map::isWall(int col, int row) const {
     TileType t = tiles[row * COLS + col];
     return t == TILE_WALL || t == TILE_WATER;
 }
+
+void Map::getFloorTiles(int* colsOut, int* rowsOut,
+                        int& countOut, int maxCount) const {
+    countOut = 0;
+    for (int r = 0; r < ROWS && countOut < maxCount; r++) {
+        for (int c = 0; c < COLS && countOut < maxCount; c++) {
+            if (tiles[r * COLS + c] == TILE_FLOOR) {
+                colsOut[countOut] = c;
+                rowsOut[countOut] = r;
+                countOut++;
+            }
+        }
+    }
+}

@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+#include <cmath>
 #include "Player.h"
 #include "Enemy.h"
 #include "Attack.h"

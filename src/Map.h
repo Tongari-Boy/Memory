@@ -19,4 +19,5 @@ struct Map {
     void load(StackAllocator& alloc, int stageIndex);
     void render(SDL_Renderer* r);
     bool isWall(int col, int row) const;
+    void getFloorTiles(int* colsOut, int* rowsOut, int& countOut, int maxCount) const;
 };
