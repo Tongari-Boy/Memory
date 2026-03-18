@@ -42,6 +42,11 @@ int main(int argc, char* argv[]) {
 		game.update(keys);
 		game.render(renderer);
 
+		//フレーム終了処理(古い方をリセット)
+		game.frameAlloc.flip();
+		game.damageTexts = nullptr;
+		game.damageTextCount = 0;
+
 		SDL_Delay(16);
 	}
 

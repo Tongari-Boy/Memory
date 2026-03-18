@@ -9,6 +9,8 @@
 #include "UI.h"
 #include "Map.h"
 #include "StackAllocator.h"
+#include "DamageText.h"
+#include "DoubleBufferAllocator.h"
 
 
 //ステージデータ
@@ -50,6 +52,10 @@ public:
 	StackAllocator stackAlloc;
 	size_t         stageMarker;   //ステージ開始時のマーカー
 
+	DoubleBufferAllocator frameAlloc;
+	DamageText* damageTexts;	//現フレームのダメージ表示
+	int damageTextCount;
+
 	//==========
 	//メソッド
 	//==========
@@ -65,12 +71,14 @@ public:
 	//シャットダウン
 	void shutdown();
 
+
 private:
 	void updateAttacks();
 	void updateEnemies();
 	void updateEffects();
 	void checkCollisions();
 	void loadStage(int stageIndex);
+	void spawnDamageText(float x, float y, int value);
 
 	static bool checkHit(float ax, float ay, int aw, int ah,
 		float bx, float by, int bw, int bh);

@@ -11,7 +11,12 @@ const StageData Game::STAGES[Game::MAX_STAGE] = {
 void Game::init() {
 
 	//スタックアロケータを初期化(4KB確保)
-	stackAlloc.init(4096);
+	stackAlloc.init(4096); 
+	//ダブルバッファアロケータを初期化(1KB確保)
+	frameAlloc.init(1024);
+
+	damageTexts = nullptr;
+	damageTextCount = 0;
 
 	ui.init("arial.ttf", 24);
 
@@ -104,6 +109,9 @@ void Game::checkCollisions() {
 			if (checkHit(atk.x, atk.y, atk.w, atk.h,
 				e.x, e.y, 20, 20)) {
 				e.hp--;
+				
+				//ダメージテキストをスポーン
+				spawnDamageText(e.x + 10, e.y, 1);
 
 				//ヒットエフェクトを4方向に生成
 				float cx = e.x + 10;
@@ -167,6 +175,14 @@ void Game::render(SDL_Renderer* renderer) {
 		{ 255,255,255,255 }
 	);
 
+	//ダメージテキスト描画
+	for (int i = 0; i < damageTextCount; i++) {
+		DamageText& dt = damageTexts[i];
+		SDL_Color red = { 255,50,50,255 };
+		ui.drawText(renderer, "-" + std::to_string(dt.value),
+			(int)dt.x, (int)dt.y, red);
+	}
+
 	//メモリバジェット用
 	renderMemoryDebug(renderer);
 
@@ -209,6 +225,10 @@ void Game::renderMemoryDebug(SDL_Renderer* r) {
 		"TOTAL: " + std::to_string(totalUsed) +
 		" / " + std::to_string(totalAll) + " bytes",
 		x, y, yellow);
+
+	ui.drawMemoryBar(r, "Frame ",
+		frameAlloc.usedBytes(), frameAlloc.totalBytes(), x, y);
+	y += lineH;
 }
 
 //AABB衝突判定
@@ -273,8 +293,29 @@ void Game::loadStage(int stageIndex) {
 	}
 }
 
+
+void Game::spawnDamageText(float x, float y, int value) {
+	DamageText* dt = (DamageText*)frameAlloc.alloc(sizeof(DamageText));
+	if (!dt) {
+		std::cout << "alloc failed!" << std::endl;
+		return;
+	}
+	dt->x = x;
+	dt->y = y;
+	dt->vy = -1.5f;
+	dt->value = value;
+	dt->lifetime = 40;
+
+	//先頭ポインタを更新
+	if (damageTextCount == 0)
+		damageTexts = dt;
+
+	damageTextCount++;
+}
+
 //シャットダウン
 void Game::shutdown() {
+	frameAlloc.shutdown();
 	stackAlloc.shutdown();
 	ui.shutdown();
 }

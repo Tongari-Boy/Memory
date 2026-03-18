@@ -18,12 +18,12 @@ void Enemy::init(float startX, float startY,EnemyType t) {
     case ENEMY_RUSH:
         speed = 1.0f;
         hp = 2;
-        size = 16;
+        size = 20;
         break;
     case ENEMY_LARGE:
         speed = 0.8f;
-        hp = 6;
-        size = 36;
+        hp = 8;
+        size = 20;
         break;
     }
 }
