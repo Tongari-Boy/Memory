@@ -5,6 +5,7 @@ void Attack::init(float px, float py, int direction) {
 	w = 20;
 	h = 20;
 	lifetime = 10;
+	hasHit = false;
 	active = true;
 
 	switch (direction)

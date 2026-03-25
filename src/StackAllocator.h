@@ -7,7 +7,7 @@ public:
     //メモリブロックの先頭ポインタ
     char* buffer;
     size_t bufferSize;
-    size_t offset;     // 現在の使用量
+    size_t offset;     //現在の使用量
 
     StackAllocator() : buffer(nullptr), bufferSize(0), offset(0) {}
 

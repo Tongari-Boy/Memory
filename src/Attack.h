@@ -7,6 +7,8 @@ struct Attack :public GameObject {
 	int   w, h;
 	int   lifetime;	//表示フレーム数
 
+	bool hasHit;	//ヒット済みフラグ
+
 	void init(float px, float py, int direction);
 	void update();
 	void render(SDL_Renderer* r);

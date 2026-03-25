@@ -19,8 +19,12 @@ struct Enemy : public GameObject {
 	int	  size;
 	EnemyType type;
 	bool isRushing;
+	float knockbackX;     //”½”­‘¬“xX
+	float knockbackY;     //”½”­‘¬“xY
+	int   knockbackTimer; //”½”­ŽžŠÔ
 
 	void init(float startX, float startY,EnemyType t = ENEMY_NORMAL);
 	void update(float playerX, float playerY,const Map* map);
 	void render(SDL_Renderer* r);
+	void applyKnockback(float dx, float dy);
 };

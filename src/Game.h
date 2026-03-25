@@ -11,6 +11,8 @@
 #include "StackAllocator.h"
 #include "DamageText.h"
 #include "DoubleBufferAllocator.h"
+#include "Sound.h"
+#include "Scene.h"
 
 
 //ステージデータ
@@ -48,13 +50,22 @@ public:
 	bool spaceWas;	//前フレームのスペース状態
 	int currentStage;
 
-	Map            map;
+	//ステージ
+	Map	map;
 	StackAllocator stackAlloc;
 	size_t         stageMarker;   //ステージ開始時のマーカー
 
+	//ダメージテキスト
 	DoubleBufferAllocator frameAlloc;
 	DamageText* damageTexts;	//現フレームのダメージ表示
 	int damageTextCount;
+
+	//サウンド
+	Sound sound;
+
+	//シーン遷移
+	Scene currentScene;
+	int finalScore;
 
 	//==========
 	//メソッド
@@ -85,4 +96,14 @@ private:
 
 	//ステージデータ一覧
 	static const StageData STAGES[MAX_STAGE];
+
+	//シーン遷移
+	void updateTitle(const Uint8* keys);
+	void updateGame(const Uint8* keys);
+	void updateResult(const Uint8* keys);
+	void renderTitle(SDL_Renderer* r);
+	void renderGame(SDL_Renderer* r);
+	void renderResult(SDL_Renderer* r);
+
+	bool enterWasPressed; //Enterキーの前フレーム状態
 };
